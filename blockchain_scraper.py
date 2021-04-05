@@ -13,7 +13,7 @@ from concurrent.futures import ThreadPoolExecutor
 THREADS_NO = 8
 
 def get_block_url(block_index, format='json'):
-    return f'https://blockchain.info/block-index/{block_index}?format={format}'
+    return f'https://blockchain.info/block-height/{block_index}?format={format}'
 
 def get_block_data(block_index, format='json'):
     try:
@@ -26,6 +26,7 @@ def get_block_data(block_index, format='json'):
                 break
             except json.JSONDecodeError as e:
                 block = None
+                #print(block_url)
                 if response.text[0] == 'B': # Block not found
                     return None, False
 
@@ -43,7 +44,7 @@ def get_tx_data(tx_hash, format='hex'):
 
         for i in range(0, THREADS_NO * 10):
             tx = requests.get(url=tx_url).text
-
+            #print(tx)
             # Retry if the response is an HTML/plain text error message:
             # - (<)html>[...]429 Too Many Requests[...]
             # - (M)aximum concurrent requests[...]
@@ -85,7 +86,8 @@ def download(height=0):
     if len(sys.argv) == 2:
         height = int(sys.argv[1])
 
-    block_index = 14849 # Genesis block index
+    height=677001
+    block_index = 0 # Genesis block index
     block_index += height
 
     running = True
@@ -107,6 +109,7 @@ def download(height=0):
             logging.warn('Skipping block index...')
             continue
 
+        block=block['blocks'][0]
         height = block['height'] + 1
         block_index += 1
 
